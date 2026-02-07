@@ -2,12 +2,961 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calm Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        background-color: #1e1e1e;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useRef } from "react";
+      import { createRoot } from "react-dom/client";
+      import {
+        Home,
+        Moon,
+        Compass,
+        User,
+        Play,
+        Pause,
+        Heart,
+        Search,
+        Settings,
+        Share,
+        X,
+        ChevronDown,
+        RotateCcw,
+        RotateCw,
+        List,
+        MoreHorizontal,
+        Bell,
+        Mountain,
+        Battery,
+        Wifi,
+        Signal,
+      } from "lucide-react";
+
+      /* --- MOCK DATA --- */
+
+      // Fallback image in case any URL fails
+      const FALLBACK_IMAGE =
+        "https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&q=80&w=800";
+
+      const MOCK_DATA = {
+        popular: [
+          {
+            id: 1,
+            title: "Seasons of Nigeria: Sokoto",
+            subtitle: "Chiké Okonkwo",
+            image:
+              "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800",
+            category: "Sleep Story",
+            duration: "30 min",
+          },
+          {
+            id: 2,
+            title: "One-Minute Reset",
+            subtitle: "Chibs Okereke",
+            image:
+              "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&q=80&w=800",
+            category: "Meditation",
+            duration: "1 min",
+          },
+          {
+            id: 3,
+            title: "Deep Sleep Release",
+            subtitle: "Tamara Levitt",
+            image:
+              "https://images.unsplash.com/photo-1511295742362-92c96b5add36?auto=format&fit=crop&q=80&w=800",
+            category: "Meditation",
+            duration: "25 min",
+          },
+        ],
+        dailies: [
+          {
+            id: 4,
+            title: "Daily Move",
+            subtitle: "Flowing Through Grief",
+            image:
+              "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=800",
+            category: "Movement",
+            duration: "10 min",
+          },
+          {
+            id: 5,
+            title: "Daily Calm",
+            subtitle: "Hakuna Matata",
+            image:
+              "https://images.unsplash.com/photo-1499209974431-2761e25236d0?auto=format&fit=crop&q=80&w=800",
+            category: "Meditation",
+            duration: "10 min",
+          },
+          {
+            id: 6,
+            title: "White Noise Ocean Surf",
+            subtitle: "Soundscape",
+            image:
+              "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&q=80&w=800",
+            category: "Music",
+            duration: "60 min",
+          },
+        ],
+        sleepStories: [
+          {
+            id: 7,
+            title: "Ludo & Sierra's Icicle Symphony",
+            subtitle: "Phillipa Alexander",
+            image:
+              "https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?auto=format&fit=crop&q=80&w=800",
+            category: "Kids",
+            duration: "35 min",
+          },
+          {
+            id: 8,
+            title: "Humphrey in the Bahamas",
+            subtitle: "Michael Griffiths",
+            image:
+              "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?auto=format&fit=crop&q=80&w=800",
+            category: "Kids",
+            duration: "36 min",
+          },
+          {
+            id: 9,
+            title: "The Nordland Night Train",
+            subtitle: "Erik Braa",
+            image:
+              "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&q=80&w=800",
+            category: "Train",
+            duration: "40 min",
+          },
+        ],
+        categories: [
+          { name: "Sleep", icon: Moon },
+          { name: "Meditation", icon: User },
+          { name: "Music", icon: Mountain },
+          { name: "Mindful Tools", icon: Compass },
+          { name: "Calm Lifestyle", icon: Heart },
+          { name: "Reflections", icon: Settings },
+        ],
+      };
+
+      /* --- COMPONENTS --- */
+
+      const AnimatedBackground = () => (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-[40px]">
+          {/* Base Layer - Deep Blue */}
+          <div className="absolute inset-0 bg-[#0f4c81]" />
+
+          {/* Gradient Overlay mimicking the lake/mountain scene */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1a3b5c] via-[#2d5a87] to-[#0f4c81] opacity-80" />
+
+          {/* Top Highlight (Sun/Moon glow) */}
+          <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-[#6b9dc2] via-transparent to-transparent opacity-30 mix-blend-screen" />
+
+          {/* Scenic Image Overlay (blended) */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=1000')`,
+            }}
+          />
+        </div>
+      );
+
+      const StatusBar = () => (
+        <div className="absolute top-0 left-0 right-0 h-12 flex justify-between items-end px-6 pb-2 z-50 text-white font-medium text-xs">
+          <span>9:41</span>
+          <div className="flex items-center space-x-1.5">
+            <Signal size={14} fill="currentColor" />
+            <Wifi size={14} />
+            <Battery size={14} fill="currentColor" />
+          </div>
+        </div>
+      );
+
+      const HomeIndicator = () => (
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/40 rounded-full z-50 pointer-events-none" />
+      );
+
+      const SafeImage = ({ src, alt, className }) => {
+        const [error, setError] = useState(false);
+        return (
+          <img
+            src={error ? FALLBACK_IMAGE : src}
+            alt={alt}
+            className={className}
+            onError={() => setError(true)}
+          />
+        );
+      };
+
+      const MiniPlayer = ({ track, onExpand, isPlaying, togglePlay }) => {
+        if (!track) return null;
+
+        return (
+          <div
+            onClick={onExpand}
+            className="absolute bottom-[90px] left-4 right-4 h-16 bg-[#3d5a80]/60 backdrop-blur-xl rounded-2xl flex items-center px-2 shadow-lg border border-white/10 z-40 transition-all active:scale-95 cursor-pointer"
+          >
+            <SafeImage
+              src={track.image}
+              alt={track.title}
+              className="w-12 h-12 rounded-xl object-cover shadow-sm ml-1"
+            />
+            <div className="flex-1 ml-3 overflow-hidden">
+              <h4 className="text-white text-sm font-medium truncate">
+                {track.title}
+              </h4>
+              <p className="text-blue-100/70 text-xs truncate">
+                {track.subtitle || track.category}
+              </p>
+            </div>
+            <div className="flex items-center space-x-3 mr-2">
+              <button className="text-white/80 hover:text-white transition-colors">
+                <Heart size={20} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="text-white hover:scale-110 transition-transform"
+              >
+                {isPlaying ? (
+                  <Pause size={24} fill="white" />
+                ) : (
+                  <Play size={24} fill="white" />
+                )}
+              </button>
+            </div>
+
+            {/* Progress Bar Line */}
+            <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-white/80 w-1/3 rounded-full" />
+            </div>
+          </div>
+        );
+      };
+
+      const FullScreenPlayer = ({ track, onClose, isPlaying, togglePlay }) => {
+        const [showControls, setShowControls] = useState(false);
+        const [bgError, setBgError] = useState(false);
+
+        useEffect(() => {
+          setShowControls(true);
+        }, []);
+
+        if (!track) return null;
+
+        return (
+          <div className="absolute inset-0 z-50 flex flex-col bg-[#0f4c81] rounded-[40px] overflow-hidden">
+            {/* Background with Blur */}
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-40"
+              style={{
+                backgroundImage: `url(${bgError ? FALLBACK_IMAGE : track.image})`,
+              }}
+            />
+            {/* Hidden img to trigger onError for background */}
+            <img
+              src={track.image}
+              className="hidden"
+              onError={() => setBgError(true)}
+              alt="preload"
+            />
+
+            <div className="absolute inset-0 bg-[#0f4c81]/80 backdrop-blur-2xl" />
+
+            {/* Header */}
+            <div className="relative z-10 flex justify-between items-center p-6 mt-8">
+              <button
+                onClick={onClose}
+                className="p-2 bg-white/10 rounded-full backdrop-blur-md"
+              >
+                <ChevronDown className="text-white" size={24} />
+              </button>
+              <div className="flex space-x-4">
+                <button className="p-2 bg-white/10 rounded-full backdrop-blur-md">
+                  <Share className="text-white" size={20} />
+                </button>
+                <button className="p-2 bg-white/10 rounded-full backdrop-blur-md">
+                  <Settings className="text-white" size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pb-20">
+              {/* Album Art with Pulse */}
+              <div className="relative mb-12">
+                {isPlaying && (
+                  <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse scale-110" />
+                )}
+                <SafeImage
+                  src={track.image}
+                  alt="Album Art"
+                  className="w-64 h-64 rounded-full object-cover shadow-2xl border-4 border-white/10 relative z-10"
+                />
+              </div>
+
+              {/* Text */}
+              <div className="text-center mb-10">
+                <h2 className="text-white text-2xl font-semibold mb-2">
+                  {track.title}
+                </h2>
+                <p className="text-blue-200 text-lg mb-4">{track.subtitle}</p>
+                <div className="text-blue-300 text-sm font-medium tracking-wide uppercase mt-4">
+                  {track.category}
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="w-full max-w-sm">
+                {/* Scrubber */}
+                <div className="flex items-center space-x-3 mb-8">
+                  <span className="text-xs text-blue-200">0:01</span>
+                  <div className="flex-1 h-1 bg-white/20 rounded-full relative group cursor-pointer">
+                    <div className="absolute left-0 top-0 bottom-0 w-[10%] bg-white rounded-full group-hover:bg-blue-100" />
+                    <div className="absolute left-[10%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg scale-0 group-hover:scale-100 transition-transform" />
+                  </div>
+                  <span className="text-xs text-blue-200">
+                    {track.duration}
+                  </span>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex items-center justify-between px-4">
+                  <button className="text-white/70 hover:text-white transition-colors">
+                    <RotateCcw size={28} />
+                  </button>
+
+                  <button className="text-white/70 hover:text-white transition-colors">
+                    <Heart size={24} />
+                  </button>
+
+                  <button
+                    onClick={togglePlay}
+                    className="bg-white text-[#0f4c81] p-5 rounded-full hover:scale-105 transition-transform shadow-lg shadow-white/10"
+                  >
+                    {isPlaying ? (
+                      <Pause size={32} fill="#0f4c81" />
+                    ) : (
+                      <Play size={32} fill="#0f4c81" />
+                    )}
+                  </button>
+
+                  <button className="text-white/70 hover:text-white transition-colors">
+                    <List size={24} />
+                  </button>
+
+                  <button className="text-white/70 hover:text-white transition-colors">
+                    <RotateCw size={28} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const CheckInModal = ({ onClose }) => (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-[#0f4c81]/90 backdrop-blur-sm animate-in fade-in duration-300 rounded-[40px]">
+          <div className="bg-[#1a3b5c] w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-white/10 relative overflow-hidden">
+            {/* Background Gradient */}
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-400/20 to-transparent pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <h3 className="text-white font-medium mb-1">
+                Session Begins In...
+              </h3>
+              <p className="text-blue-200 text-sm mb-6">6 seconds</p>
+
+              {/* Gradient Card */}
+              <div className="w-full aspect-square bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-500 rounded-2xl p-6 flex flex-col items-center justify-center shadow-lg mb-6 transform transition-transform hover:scale-[1.02]">
+                <h2 className="text-white text-xl font-medium mb-1">
+                  How are you
+                </h2>
+                <h1 className="text-white text-6xl font-script mb-6 drop-shadow-md">
+                  feeling?
+                </h1>
+                <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center">
+                  <div className="w-6 h-4 border-b-2 border-white rounded-full" />
+                </div>
+              </div>
+
+              <p className="text-white text-lg font-medium mb-2">
+                How are you feeling?
+              </p>
+              <p className="text-blue-200 text-sm mb-8 px-4">
+                Take a moment to reflect before your meditation
+              </p>
+
+              <button
+                className="w-full bg-white text-[#0f4c81] font-semibold py-3.5 rounded-full mb-3 hover:bg-blue-50 transition-colors"
+                onClick={onClose}
+              >
+                Start Check-In
+              </button>
+              <button
+                className="w-full bg-[#2d5a87] text-white font-medium py-3.5 rounded-full hover:bg-[#366899] transition-colors border border-white/10"
+                onClick={onClose}
+              >
+                Skip
+              </button>
+              <button
+                className="mt-4 text-blue-300 text-xs hover:text-white transition-colors"
+                onClick={onClose}
+              >
+                Never Show Again
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const NavIcon = ({ Icon, label, isActive, onClick }) => (
+        <button
+          onClick={onClick}
+          className={`flex flex-col items-center justify-center space-y-1 w-16 transition-all duration-300 ${isActive ? "text-white" : "text-blue-300/60"}`}
+        >
+          <div
+            className={`p-1.5 rounded-full transition-all duration-300 ${isActive ? "bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)] transform -translate-y-1" : ""}`}
+          >
+            <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+          </div>
+          <span
+            className={`text-[10px] font-medium tracking-wide ${isActive ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}`}
+          >
+            {label}
+          </span>
+        </button>
+      );
+
+      const SectionHeader = ({ title, showSeeAll = true }) => (
+        <div className="flex justify-between items-end px-4 mb-4 mt-8">
+          <h3 className="text-white text-xl font-medium tracking-wide">
+            {title}
+          </h3>
+          {showSeeAll && (
+            <button className="text-blue-300 text-xs font-medium hover:text-white transition-colors">
+              See All
+            </button>
+          )}
+        </div>
+      );
+
+      const ContentCard = ({ item, onClick, aspect = "video" }) => (
+        <div
+          onClick={() => onClick(item)}
+          className="flex-shrink-0 mr-4 group cursor-pointer"
+          style={{ width: aspect === "video" ? "260px" : "160px" }}
+        >
+          <div
+            className={`relative overflow-hidden rounded-2xl mb-3 shadow-lg transition-transform duration-300 group-hover:scale-[1.02] ${aspect === "square" ? "aspect-square" : "aspect-video"}`}
+          >
+            <SafeImage
+              src={item.image}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+
+            {/* Play Icon on Hover */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[1px]">
+              <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
+                <Play size={24} fill="white" className="text-white" />
+              </div>
+            </div>
+
+            {/* Duration Badge */}
+            <div className="absolute bottom-2 left-2 flex items-center space-x-1">
+              {aspect === "video" && (
+                <Play size={10} fill="white" className="text-white" />
+              )}
+              <span className="text-white text-[10px] font-medium drop-shadow-md">
+                {item.duration}
+              </span>
+            </div>
+          </div>
+
+          <h4 className="text-white font-medium text-sm leading-tight mb-1 group-hover:text-blue-200 transition-colors">
+            {item.title}
+          </h4>
+          <p className="text-blue-300 text-xs">
+            {item.subtitle || item.category}
+          </p>
+        </div>
+      );
+
+      const TabBar = ({ activeTab, setActiveTab }) => (
+        <div className="absolute bottom-0 left-0 right-0 h-[85px] bg-[#0f4c81]/80 backdrop-blur-2xl border-t border-white/5 flex items-center justify-around px-2 z-40 pb-4 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] rounded-b-[40px]">
+          <NavIcon
+            Icon={Home}
+            label="Home"
+            isActive={activeTab === "home"}
+            onClick={() => setActiveTab("home")}
+          />
+          <NavIcon
+            Icon={Moon}
+            label="Sleep"
+            isActive={activeTab === "sleep"}
+            onClick={() => setActiveTab("sleep")}
+          />
+          <NavIcon
+            Icon={Compass}
+            label="Discover"
+            isActive={activeTab === "discover"}
+            onClick={() => setActiveTab("discover")}
+          />
+          <NavIcon
+            Icon={User}
+            label="Profile"
+            isActive={activeTab === "profile"}
+            onClick={() => setActiveTab("profile")}
+          />
+        </div>
+      );
+
+      /* --- SCREENS --- */
+
+      const HomeScreen = ({ onPlay }) => (
+        <div className="pb-32 pt-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Scenic Header */}
+          <div className="flex flex-col items-center mb-8 relative">
+            <div className="absolute top-0 left-4 p-2 bg-white/10 rounded-full backdrop-blur-md">
+              <Mountain size={20} className="text-white" />
+            </div>
+            <div className="absolute top-0 right-4 p-2 bg-white/10 rounded-full backdrop-blur-md relative">
+              <Bell size={20} className="text-white" />
+              <div className="absolute top-2 right-2.5 w-2 h-2 bg-red-400 rounded-full border-2 border-[#0f4c81]" />
+            </div>
+
+            <h1 className="text-white text-6xl mb-12 drop-shadow-lg font-logo tracking-tight">
+              Calm
+            </h1>
+
+            {/* Progress Ring */}
+            <div className="relative w-40 h-40 mb-10">
+              {/* Background Circle */}
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="12"
+                  fill="none"
+                />
+                {/* Progress Arc */}
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="white"
+                  strokeWidth="12"
+                  fill="none"
+                  strokeDasharray="440"
+                  strokeDashoffset="340"
+                  strokeLinecap="round"
+                  className="drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-white text-5xl font-light">1</span>
+                <span className="text-blue-200 text-sm font-medium mt-1">
+                  Day
+                </span>
+              </div>
+            </div>
+
+            {/* Week Streak */}
+            <div className="flex justify-center space-x-3 mb-4">
+              {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => (
+                <div key={idx} className="flex flex-col items-center space-y-2">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 
+              ${idx === 3 ? "bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.3)]" : "bg-white/5 border-transparent text-blue-300/50"}`}
+                  >
+                    {idx === 3 ? <span className="text-sm">✓</span> : null}
+                  </div>
+                  <span className="text-[10px] font-medium text-blue-200/60">
+                    {day}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-blue-100 text-center text-sm px-10 leading-relaxed mt-4 opacity-90">
+              You're off to a great start using Calm 1 day this week. Keep it
+              up!
+            </p>
+          </div>
+
+          {/* Content Sections */}
+          <SectionHeader title="Popular on Calm" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.popular.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="Today's Dailies" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.dailies.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <div className="h-8" />
+        </div>
+      );
+
+      const SleepScreen = ({ onPlay }) => (
+        <div className="pb-32 pt-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col items-center mb-6">
+            <h2 className="text-white text-xl font-medium mb-6">Sleep</h2>
+
+            {/* Pills Filter */}
+            <div className="flex overflow-x-auto w-full px-4 space-x-2 scrollbar-hide pb-2">
+              <button className="bg-white text-[#0f4c81] px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap shadow-lg">
+                Sleep Stories
+              </button>
+              <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
+                All
+              </button>
+              <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
+                Meditations
+              </button>
+              <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
+                Music
+              </button>
+            </div>
+          </div>
+
+          {/* Featured Banner Style */}
+          <div
+            className="mx-4 mb-8 bg-gradient-to-r from-indigo-900 to-purple-900 rounded-2xl p-4 flex items-center justify-between shadow-lg border border-white/10 relative overflow-hidden group cursor-pointer"
+            onClick={() => onPlay(MOCK_DATA.sleepStories[2])}
+          >
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?auto=format&fit=crop&q=80&w=800')] opacity-20 bg-cover bg-center" />
+            <div className="relative z-10 w-2/3">
+              <span className="text-[10px] uppercase tracking-wider text-purple-200 font-bold mb-1 block">
+                Featured
+              </span>
+              <h3 className="text-white font-serif text-xl mb-1">
+                Train Dreams
+              </h3>
+              <p className="text-blue-200 text-xs">
+                An Immersive Audio Journey
+              </p>
+            </div>
+            <div className="relative z-10 bg-white/20 p-3 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform">
+              <Play fill="white" size={20} className="text-white" />
+            </div>
+          </div>
+
+          <SectionHeader title="Sleep Stories for Kids" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.sleepStories.map((item) => (
+              <ContentCard
+                key={item.id}
+                item={item}
+                onClick={onPlay}
+                aspect="square"
+              />
+            ))}
+          </div>
+
+          <SectionHeader title="Playlists" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.popular.map((item) => (
+              <ContentCard
+                key={item.id}
+                item={item}
+                onClick={onPlay}
+                aspect="square"
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+      const DiscoverScreen = ({ onPlay }) => (
+        <div className="pb-32 pt-14 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center mb-6">
+            <h2 className="text-white text-xl font-medium mb-6">Discover</h2>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search
+                className="absolute left-4 top-3.5 text-blue-200"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Title, narrator, artist, or topic"
+                className="w-full bg-[#1a3b5c]/60 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-blue-300/50 focus:outline-none focus:bg-[#1a3b5c] focus:border-white/30 transition-all shadow-inner"
+              />
+            </div>
+          </div>
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            {MOCK_DATA.categories.map((cat, idx) => (
+              <button
+                key={idx}
+                className="bg-[#1a3b5c]/40 hover:bg-[#1a3b5c]/80 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center space-y-3 transition-colors group h-28"
+              >
+                <cat.icon
+                  className="text-white group-hover:scale-110 transition-transform"
+                  size={28}
+                />
+                <span className="text-blue-100 font-medium text-sm">
+                  {cat.name}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <SectionHeader title="New & Noteworthy" showSeeAll={true} />
+          <div className="flex overflow-x-auto -mx-4 px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.dailies.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+        </div>
+      );
+
+      const ProfileScreen = ({ onPlay }) => (
+        <div className="pb-32 pt-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center px-6 mb-6">
+            <Settings className="text-white" size={24} />
+            <h2 className="text-white text-xl font-medium">Profile</h2>
+            <Bell className="text-white" size={24} />
+          </div>
+
+          {/* Tabs */}
+          <div className="flex justify-center space-x-2 mb-8 px-4">
+            {["Dashboard", "Library", "History", "Check-Ins"].map((tab, i) => (
+              <button
+                key={tab}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${i === 0 ? "bg-white text-[#0f4c81]" : "bg-[#1a3b5c]/60 text-blue-200 border border-white/5"}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Gift Banner */}
+          <div className="mx-4 mb-8 bg-gradient-to-br from-yellow-200 via-orange-300 to-yellow-500 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -mr-10 -mt-10" />
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div className="mb-3 p-2 bg-black/10 rounded-lg">
+                <Share size={24} className="text-yellow-900" />
+              </div>
+              <h3 className="text-yellow-900 font-bold text-lg mb-1">
+                Give the gift of Calm
+              </h3>
+              <p className="text-yellow-900/80 text-xs mb-4 max-w-[200px]">
+                Give a loved one a 30-day trial of Calm
+              </p>
+              <button className="bg-white text-yellow-900 font-bold py-3 px-12 rounded-full shadow-md text-sm hover:scale-105 transition-transform">
+                Continue
+              </button>
+            </div>
+          </div>
+
+          {/* Wisdom Quote Card */}
+          <div className="mx-4 mb-8 bg-[#1a3b5c]/60 rounded-3xl p-6 border border-white/5 text-center">
+            <Moon className="w-6 h-6 text-blue-200 mx-auto mb-3" />
+            <p className="text-blue-100 text-sm leading-relaxed italic">
+              "There are more connections in your brain than stars in the
+              galaxy. Try counting them the next time you're having trouble
+              falling asleep."
+            </p>
+            <p className="text-blue-300 text-[10px] mt-3 uppercase tracking-widest">
+              Feb 5
+            </p>
+          </div>
+
+          <SectionHeader title="My Stats" showSeeAll={false} />
+          <div className="mx-4 bg-[#1a3b5c]/60 rounded-3xl p-8 border border-white/5 flex flex-col items-center">
+            <div className="relative mb-6">
+              <div className="w-24 h-24 rounded-full border-4 border-white/10 flex items-center justify-center bg-gradient-to-b from-blue-500/20 to-transparent">
+                <span className="text-white text-3xl font-light">1</span>
+              </div>
+              {/* Decorative Badge Ribbon SVG */}
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1 rounded-lg shadow-lg border border-white/10 whitespace-nowrap">
+                <span className="text-white text-xs font-bold uppercase tracking-wide">
+                  Mindful Day
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between w-full px-8 mt-4 mb-8">
+              <div className="flex flex-col items-center">
+                <div className="text-blue-300 mb-1">
+                  <User size={20} />
+                </div>
+                <span className="text-white font-medium">1</span>
+                <span className="text-blue-300 text-[10px]">
+                  Total Sessions
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-blue-300 mb-1">
+                  <RotateCw size={20} />
+                </div>
+                <span className="text-white font-medium">1 min</span>
+                <span className="text-blue-300 text-[10px]">
+                  Mindful Minutes
+                </span>
+              </div>
+            </div>
+
+            <button className="w-full bg-white text-[#0f4c81] font-bold py-3.5 rounded-full flex items-center justify-center space-x-2 shadow-lg hover:bg-blue-50 transition-colors">
+              <Share size={18} />
+              <span>Share My Stats</span>
+            </button>
+          </div>
+
+          <div className="h-4" />
+        </div>
+      );
+
+      /* --- MAIN APP WRAPPER --- */
+
+      // Internal app logic component
+      const AppContent = () => {
+        const [activeTab, setActiveTab] = useState("home");
+        const [currentTrack, setCurrentTrack] = useState(null);
+        const [isPlaying, setIsPlaying] = useState(false);
+        const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+        const [showCheckIn, setShowCheckIn] = useState(false);
+
+        useEffect(() => {
+          setCurrentTrack(MOCK_DATA.sleepStories[0]);
+          const timer = setTimeout(() => setShowCheckIn(true), 1500);
+          return () => clearTimeout(timer);
+        }, []);
+
+        const handlePlay = (track) => {
+          setCurrentTrack(track);
+          setIsPlaying(true);
+          setIsPlayerOpen(true);
+        };
+
+        const togglePlay = () => setIsPlaying(!isPlaying);
+
+        return (
+          <div className="absolute inset-0 overflow-hidden font-sans antialiased selection:bg-blue-300 selection:text-blue-900 rounded-[40px]">
+            <AnimatedBackground />
+            <StatusBar />
+
+            {/* Scrollable Content Area */}
+            <div className="absolute inset-0 overflow-y-auto scrollbar-hide z-10 pt-8 pb-4">
+              <div className="relative min-h-full">
+                {activeTab === "home" && <HomeScreen onPlay={handlePlay} />}
+                {activeTab === "sleep" && <SleepScreen onPlay={handlePlay} />}
+                {activeTab === "discover" && (
+                  <DiscoverScreen onPlay={handlePlay} />
+                )}
+                {activeTab === "profile" && (
+                  <ProfileScreen onPlay={handlePlay} />
+                )}
+              </div>
+            </div>
+
+            {/* Floating Elements (Player & Nav) */}
+            <div className="absolute inset-0 pointer-events-none rounded-[40px] overflow-hidden">
+              <div className="pointer-events-auto w-full h-full relative">
+                {/* Mini Player */}
+                {!isPlayerOpen && currentTrack && (
+                  <MiniPlayer
+                    track={currentTrack}
+                    onExpand={() => setIsPlayerOpen(true)}
+                    isPlaying={isPlaying}
+                    togglePlay={togglePlay}
+                  />
+                )}
+
+                {/* Bottom Navigation */}
+                <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+                <HomeIndicator />
+              </div>
+            </div>
+
+            {/* Modals & Overlays */}
+            {isPlayerOpen && (
+              <FullScreenPlayer
+                track={currentTrack}
+                onClose={() => setIsPlayerOpen(false)}
+                isPlaying={isPlaying}
+                togglePlay={togglePlay}
+              />
+            )}
+
+            {showCheckIn && (
+              <CheckInModal onClose={() => setShowCheckIn(false)} />
+            )}
+          </div>
+        );
+      };
+
+      // Exported component with iPhone Frame
+      function CalmApp() {
+        return (
+          <div className="min-h-screen w-full bg-[#1e1e1e] flex items-center justify-center p-8">
+            {/* iPhone Container */}
+            <div className="relative w-[375px] h-[812px] bg-black rounded-[60px] shadow-2xl border-[14px] border-black ring-1 ring-white/10">
+              {/* Notch */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-[30px] bg-black rounded-b-3xl z-50 pointer-events-none" />
+              {/* Side Buttons (Mock) */}
+              <div className="absolute top-24 -left-[18px] w-[4px] h-12 bg-gray-800 rounded-l-md" />{" "}
+              {/* Silent */}
+              <div className="absolute top-40 -left-[18px] w-[4px] h-16 bg-gray-800 rounded-l-md" />{" "}
+              {/* Vol Up */}
+              <div className="absolute top-60 -left-[18px] w-[4px] h-16 bg-gray-800 rounded-l-md" />{" "}
+              {/* Vol Down */}
+              <div className="absolute top-44 -right-[18px] w-[4px] h-24 bg-gray-800 rounded-r-md" />{" "}
+              {/* Power */}
+              {/* Screen Area */}
+              <div className="relative w-full h-full bg-[#0f4c81] rounded-[46px] overflow-hidden mask-image-rounded">
+                <AppContent />
+              </div>
+            </div>
+
+            <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sacramento&family=Satisfy&family=Inter:wght@300;400;500;600&display=swap');
+        .font-logo { font-family: 'Sacramento', cursive; }
+        .font-script { font-family: 'Satisfy', cursive; }
+        body { font-family: 'Inter', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+          </div>
+        );
+      }
+
+      const root = createRoot(document.getElementById("root"));
+      root.render(<CalmApp />);
+    </script>
   </body>
 </html>
