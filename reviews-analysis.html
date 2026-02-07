@@ -1,0 +1,1705 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calm App - Filtered Issues Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --accent: #f43f5e; /* Red-ish accent for issues */
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 60px;
+      }
+
+      h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        /* Gradient red to orange */
+        background: linear-gradient(to right, #f87171, #fb923c);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 1.2rem;
+      }
+
+      .filter-tags {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .tag {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: #e2e8f0;
+      }
+
+      .stats-main {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .stat-huge {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1;
+      }
+
+      .stat-huge-label {
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .chart-full {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 60px;
+        height: 500px;
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin-bottom: 24px;
+        color: var(--text-main);
+        border-bottom: 1px solid #334155;
+        padding-bottom: 10px;
+      }
+
+      .details-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 24px;
+        margin-bottom: 60px;
+      }
+
+      .category-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        border-left: 4px solid var(--accent);
+      }
+
+      .cat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .cat-name {
+        font-weight: 700;
+        font-size: 1.3rem;
+      }
+
+      .cat-count {
+        background-color: rgba(244, 63, 94, 0.1);
+        color: #fb7185;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .review-example {
+        background-color: rgba(255, 255, 255, 0.03);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        font-style: italic;
+        border-left: 2px solid #475569;
+      }
+
+      .raw-list {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        padding: 24px;
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .raw-item {
+        border-bottom: 1px solid #334155;
+        padding: 15px 0;
+      }
+      .raw-item:last-child {
+        border-bottom: none;
+      }
+
+      .raw-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .score-badge {
+        color: #f87171;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Filtered Issue Report</h1>
+        <div class="subtitle">
+          Deep dive into 10,000 negative reviews (Non-Pricing)
+        </div>
+        <div class="filter-tags">
+          <span class="tag">Score <= 3</span>
+          <span class="tag">Excludes "Price/Sub"</span>
+          <span class="tag">Top 10k Samples</span>
+        </div>
+      </header>
+
+      <div class="stats-main">
+        <div class="stat-huge">10,000</div>
+        <div class="stat-huge-label">Reviews Analyzed</div>
+      </div>
+
+      <div class="chart-full">
+        <canvas id="categoryChart"></canvas>
+      </div>
+
+      <h2>Top Pain Point Categories</h2>
+      <div class="details-section">
+        <div class="category-card" style="border-left-color: #36a2eb">
+          <div class="cat-header">
+            <span class="cat-name">Content & Locked Items</span>
+            <span
+              class="cat-count"
+              style="color: #36a2eb; background: #36a2eb22"
+              >2845</span
+            >
+          </div>
+          <div class="review-example">
+            "1★: I support this app but when the options/features for tracking
+            everything is updated then I will add this app to my phone other
+            than that I really don'..."
+          </div>
+          <div class="review-example">
+            "1★: it says it is a free app? it's charging..."
+          </div>
+          <div class="review-example">
+            "2★: Became disappointed with it. I have free version for years and
+            one of my favorite features is the daily resets and how clicking on
+            each day's message ..."
+          </div>
+          <div class="review-example">
+            "2★: There are barely any free ones and even without a paid account
+            they only recommend locked content for you. I only found 2 free
+            meditations...."
+          </div>
+          <div class="review-example">"2★: NOT FREE..."</div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #ffce56">
+          <div class="cat-header">
+            <span class="cat-name">Technical Issues</span>
+            <span
+              class="cat-count"
+              style="color: #ffce56; background: #ffce5622"
+              >492</span
+            >
+          </div>
+          <div class="review-example">
+            "3★: Just started using it since I got a code for Christmas.
+            Constantly has weird sound artifacts when listening to meditations.
+            Difficult to navigate and ..."
+          </div>
+          <div class="review-example">
+            "2★: I expected a directed program to follow, in order to slow my
+            brain, the app is basicly a large list of soundtracks, some music,
+            some stories, some med..."
+          </div>
+          <div class="review-example">
+            "3★: This really makes me sad but I just can't use it anymore. The
+            voices make horrible sounds throughout each meditation. It's almost
+            like listening to a ..."
+          </div>
+          <div class="review-example">
+            "1★: cannot seem to cast anything to Google home. This bug was meant
+            to be fixed but now the icon shows but it still doesn't cast...
+            annoying when I bought..."
+          </div>
+          <div class="review-example">
+            "2★: I used to love this app. but lately all of the sleep stories
+            have music and it is so hard to fall asleep to that. :( and the
+            voices are not as soothin..."
+          </div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #4bc0c0">
+          <div class="cat-header">
+            <span class="cat-name">Audio & Playback</span>
+            <span
+              class="cat-count"
+              style="color: #4bc0c0; background: #4bc0c022"
+              >1275</span
+            >
+          </div>
+          <div class="review-example">
+            "3★: Just started using it since I got a code for Christmas.
+            Constantly has weird sound artifacts when listening to meditations.
+            Difficult to navigate and ..."
+          </div>
+          <div class="review-example">
+            "2★: I expected a directed program to follow, in order to slow my
+            brain, the app is basicly a large list of soundtracks, some music,
+            some stories, some med..."
+          </div>
+          <div class="review-example">
+            "1★: terrible, just want to block the radio in a doctor's office but
+            it's all ads and surveys and once I get the water flowing noise it
+            is too quiet and no..."
+          </div>
+          <div class="review-example">
+            "1★: I just want white noise. this is so insanely complicated to
+            just get white noise..."
+          </div>
+          <div class="review-example">
+            "2★: I use the sounds to help me fall asleep. ever since the new
+            year the app stops when my screen goes dark. I never used to do this
+            and I'm not sure how ..."
+          </div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #9966ff">
+          <div class="cat-header">
+            <span class="cat-name">UX & Updates</span>
+            <span
+              class="cat-count"
+              style="color: #9966ff; background: #9966ff22"
+              >439</span
+            >
+          </div>
+          <div class="review-example">
+            "1★: I support this app but when the options/features for tracking
+            everything is updated then I will add this app to my phone other
+            than that I really don'..."
+          </div>
+          <div class="review-example">
+            "3★: Just started using it since I got a code for Christmas.
+            Constantly has weird sound artifacts when listening to meditations.
+            Difficult to navigate and ..."
+          </div>
+          <div class="review-example">
+            "2★: Became disappointed with it. I have free version for years and
+            one of my favorite features is the daily resets and how clicking on
+            each day's message ..."
+          </div>
+          <div class="review-example">
+            "2★: I am sorry but so far I am not impressed. The speakers are
+            often overridden by the background sounds that often sound static in
+            nature. I like Matt Mc..."
+          </div>
+          <div class="review-example">
+            "3★: what happened with the volume? after the most recent update all
+            the voices are whisper quiet! i have to turn the background sounds
+            to almost zero to h..."
+          </div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #ff9f40">
+          <div class="cat-header">
+            <span class="cat-name">Login & Account</span>
+            <span
+              class="cat-count"
+              style="color: #ff9f40; background: #ff9f4022"
+              >423</span
+            >
+          </div>
+          <div class="review-example">
+            "2★: Why would anyone want to create an account when you do not know
+            if you want to keep the app? You have not seen the application at
+            work. I am a consult..."
+          </div>
+          <div class="review-example">"1★: Can't use without account..."</div>
+          <div class="review-example">
+            "2★: Became disappointed with it. I have free version for years and
+            one of my favorite features is the daily resets and how clicking on
+            each day's message ..."
+          </div>
+          <div class="review-example">
+            "2★: There are barely any free ones and even without a paid account
+            they only recommend locked content for you. I only found 2 free
+            meditations...."
+          </div>
+          <div class="review-example">
+            "1★: Won't let me create an account. it just keeps prompting me to
+            hold the bar to prove I'm not a boy. After it completes the test, I
+            get a check mark but..."
+          </div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #c9cbcf">
+          <div class="cat-header">
+            <span class="cat-name">Ads & Promotion</span>
+            <span
+              class="cat-count"
+              style="color: #c9cbcf; background: #c9cbcf22"
+              >519</span
+            >
+          </div>
+          <div class="review-example">
+            "1★: Little to no content on the Basic tier. and lots of pop ups.
+            No, I do not want notifications...."
+          </div>
+          <div class="review-example">
+            "3★: Just started using it since I got a code for Christmas.
+            Constantly has weird sound artifacts when listening to meditations.
+            Difficult to navigate and ..."
+          </div>
+          <div class="review-example">
+            "1★: Way too many pop ups you have to get through before you can see
+            what you want...."
+          </div>
+          <div class="review-example">
+            "1★: terrible, just want to block the radio in a doctor's office but
+            it's all ads and surveys and once I get the water flowing noise it
+            is too quiet and no..."
+          </div>
+          <div class="review-example">
+            "2★: I am sorry but so far I am not impressed. The speakers are
+            often overridden by the background sounds that often sound static in
+            nature. I like Matt Mc..."
+          </div>
+        </div>
+
+        <div class="category-card" style="border-left-color: #e7e9ed">
+          <div class="cat-header">
+            <span class="cat-name">Other/Uncategorized</span>
+            <span
+              class="cat-count"
+              style="color: #e7e9ed; background: #e7e9ed22"
+              >5213</span
+            >
+          </div>
+          <div class="review-example">"2★: not wotk8nh..."</div>
+          <div class="review-example">
+            "1★: awful navigation. joined bc of a video on Instagram and
+            couldn't find it anywhere on the app. nothing but aggravating...."
+          </div>
+          <div class="review-example">"3★: Nice..."</div>
+          <div class="review-example">
+            "3★: I was giving Calm five stars till recently when I could not
+            finish my sleep story like Humphrey on Rio.. I got the first five
+            minutes and it went back..."
+          </div>
+          <div class="review-example">"1★: 👎..."</div>
+        </div>
+      </div>
+
+      <h2>Recent Raw Reviews (Sample)</h2>
+      <div class="raw-list">
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>1/2/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            I support this app but when the options/features for tracking
+            everything is updated then I will add this app to my phone other
+            than that I really don't like the fact that it don't have many of
+            options but really limited
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>1/2/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            Little to no content on the Basic tier. and lots of pop ups. No, I
+            do not want notifications.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>28/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            Why would anyone want to create an account when you do not know if
+            you want to keep the app? You have not seen the application at work.
+            I am a consultant, however, if you understand basic knowledge you
+            will agree with my statement. Unfortunately, the author of the
+            product did not ask themselves this reasonable question. As a
+            result, all of that good work is not realized by the public.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>26/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>it says it is a free app? it's charging</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>26/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>not wotk8nh</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>25/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            awful navigation. joined bc of a video on Instagram and couldn't
+            find it anywhere on the app. nothing but aggravating.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>25/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>Nice</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>24/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>Can't use without account</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>23/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            I was giving Calm five stars till recently when I could not finish
+            my sleep story like Humphrey on Rio.. I got the first five minutes
+            and it went back and started over. This has happened the last couple
+            days even on other sleep stories.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>23/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            Just started using it since I got a code for Christmas. Constantly
+            has weird sound artifacts when listening to meditations. Difficult
+            to navigate and find topics, and most of the topics I found feel
+            commercial or have very short meditations. Also, no ability to
+            change the speed of the meditation, sometimes I just wanna listen at
+            1.25x speed because these people speak so slowly. Prefer Headspace
+            over this by leaps and bounds so far
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>23/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            Way too many pop ups you have to get through before you can see what
+            you want.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            I expected a directed program to follow, in order to slow my brain,
+            the app is basicly a large list of soundtracks, some music, some
+            stories, some meditations. kind of like Spotify but quieter content.
+            Not what I thought it would be
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>22/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>👎</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            If your goal is meditation, especially regular meditation, this js
+            definitely not the right app.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            Became disappointed with it. I have free version for years and one
+            of my favorite features is the daily resets and how clicking on each
+            day's message would bring it up on a separate screen so I would take
+            a screenshot saved to my photos. They seem to have discontinued that
+            because for quite some time now, when I click on the daily reset, it
+            brings up the home page of the whole Calm app. I can only pull the
+            reset down from my phone's notifications to take a
+            screenshot.Update:works intermittently.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>
+            There are barely any free ones and even without a paid account they
+            only recommend locked content for you. I only found 2 free
+            meditations.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/1/2026</span>
+            <span>6.87</span>
+          </div>
+          <div>NOT FREE</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>20/1/2026</span>
+            <span>5.11</span>
+          </div>
+          <div>
+            terrible, just want to block the radio in a doctor's office but it's
+            all ads and surveys and once I get the water flowing noise it is too
+            quiet and no ability to adjust
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>19/1/2026</span>
+            <span>6.82-xr</span>
+          </div>
+          <div>This app is much better in the Quest</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>18/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>app takes an embarrassingly long time to load. fix it.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>18/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>Should really be listed under paid apps. Nothing free here</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>17/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>can't even log on ro the app. so stupid</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>16/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>it's not free</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>15/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            Won't let me create an account. it just keeps prompting me to hold
+            the bar to prove I'm not a boy. After it completes the test, I get a
+            check mark but then repeats the same test...over and over and over.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>15/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            In the middle of the night when I needed help getting back to sleep,
+            instead of giving me easy, no-stress ways to do this, they took over
+            the screen with questions about why I was awake and page-blockers to
+            set up bedtime notifications. ARE YOU KIDDING ME!???? Rather than
+            easily going back to sleep to a soothing sleep story, I was so
+            distracted and this was so high cognitive load that I was completely
+            awake now and it destroyed my whole night's sleep. TERRIBLE APP!
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>15/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>I really pray that this will help me heal😊</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>13/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>Create an account? LOL. No thanks.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>12/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            I just want white noise. this is so insanely complicated to just get
+            white noise
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>12/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>it is not a free app after 7 days.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>12/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            I use the sounds to help me fall asleep. ever since the new year the
+            app stops when my screen goes dark. I never used to do this and I'm
+            not sure how to fix it
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>10/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            Junk...not intuitive to find free content. I got frustrated and
+            deleted.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>10/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            not going to lie. the phone app has way more media to consume. but
+            this XR version is good too. plus I thought it was going to be 360
+            immersion, considering this app version was made for the XR
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>10/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            This app is fine unless you have any sort of issue. I reached out to
+            support on 12/28. It is now 01/10, and I have only received an
+            automated response via email. There is no other way to contact them,
+            which seems super sketchy. Beware , they have no support for the app
+            if you have issues.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>10/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>Can't get to just calming sounds</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>10/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            Just starts auto playing when I open the app. Not acceptable.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>9/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            I like the different options to listen to for learning healthy
+            habits. However, if I paused it partway and came back after 5 min, I
+            needed to restart the speaker. Sometimes, I had to completely close
+            the app before I could come back to listen. I also liked the option
+            to listen to soft music to go to sleep and set a timer for it to
+            stop.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>9/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>maybe it is ok, but £50 per month?!</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>8/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            The whole reason I wanted this was so that I could use it with my
+            echo studio for sleep sounds. the fact that they got rid of that
+            integration makes it borderline useless for me.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>8/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            Custom service is terrible! I've been waiting for over a week for a
+            reply.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>8/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>Very meh!</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>8/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>reviewing the free version. very limited</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>7/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>great. but some things don't work.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>7/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            Up until last week this was a great app. Now whenever I get the
+            notifications for my check in or the daily calm quote and I click to
+            open the app the only thing there is an offer for a discounted plan
+            (which I cannot afford so I use the free version) and then a page of
+            things that are locked. No thanks, I am done trying to use this any
+            longer.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>7/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            This really makes me sad but I just can't use it anymore. The voices
+            make horrible sounds throughout each meditation. It's almost like
+            listening to a scratched record or CD. The voice will slow down or
+            repeat with a static like sound. I used to look forward to my daily
+            routine of waking up and playing the daily meditations. But now I
+            dread it. I still love the content and message of each meditation, I
+            just wish the playback quality was better or could be fixed.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>6/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            I am sorry but so far I am not impressed. The speakers are often
+            overridden by the background sounds that often sound static in
+            nature. I like Matt McChaunhy readings. The dashboard a bit
+            confusing. Wish it had xome with an introductory video. I am
+            surprised as you see it advertised alot.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>6/1/2026</span>
+            <span>6.10.1</span>
+          </div>
+          <div>
+            In my experience, calm seems to be running deceptive ads. I
+            subscribed to have access to supposedly new emdr programs and all I
+            could find were subpar sound beats. I've found better free content
+            on YouTube. I also feel that the app has overused celebrities. My
+            idea of meditation does not include Camilla cabello (no hate, I love
+            her music). Overall I was extremely disappointed with the content on
+            Calm but mostly upset about the deceptive advertising.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/1/2026</span>
+            <span>5.15</span>
+          </div>
+          <div>
+            This app, that I barely ever use, but paid for, has used the MOST
+            battery usage of any app on my phone.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>5/1/2026</span>
+            <span>6.84</span>
+          </div>
+          <div>
+            moist moist moist moist...I don't belive how many people detest this
+            word but mine is "nostril". this set up is phenomenal and has helped
+            me in ways I can't tell you BUT I can't hear nostril 6 times per
+            session. I'm at a loss because AS PETTY AS IT IS, that will stop me
+            from renewing. I am actually calmer DRIVING, BUT I can't contain my
+            irritation with nostril (yes I see the irony here) . Tamara is the
+            one that has to continue saying it and SHE'S THE ONLY ONE I can
+            listen to! ok it's time to qui
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            (Pixel Watch 4) Doesn't keep the display on during a breathing
+            session. When the screen is off, the app messes with vibration as a
+            result, the vibration stops working on the system level until a
+            reboot.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>paid app</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            cannot seem to cast anything to Google home. This bug was meant to
+            be fixed but now the icon shows but it still doesn't cast...
+            annoying when I bought to have for my kids to listen to meditation
+            or calm stories...
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>4/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            wish they had other creators, not keen on Tameras voice personally
+            and she narrates 90% of the sessions. more soft spoken content would
+            be helpful
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>4/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            This watch app is really bad and every podcast turns off after 30-60
+            seconds
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>2/1/2026</span>
+            <span>5.15</span>
+          </div>
+          <div>not used..couldn't find what I wanted</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>2/1/2026</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            It's ok. I was given a code for 3 free months, but nowhere to put it
+            in when signing up, so I am just using the free version-- which
+            means I see all kinds of options that are not available to me, which
+            is frustrating & does not lead to the result I hope for by using
+            this app. i've sent an email but have not heard anything back a few
+            days later...
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>1/1/2026</span>
+            <span>No Version</span>
+          </div>
+          <div>scammers!!! 💯 percent</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>30/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Not Even Slightly Calming...after 4 tries to even begin to attempt
+            to check it out by saying continue with Google to then be hit with
+            the onslaught of tell us your life story, allow us to control
+            everything and enter card information we will consider letting you
+            check it out ... so don't try to install this in middle of night or
+            you will end up on blood pressure meds or a broken phone
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>29/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>I do not use it</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>28/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            I used to love this app. but lately all of the sleep stories have
+            music and it is so hard to fall asleep to that. :( and the voices
+            are not as soothing quiet slow and relaxing as they used to be. I
+            love tamera Lovetts voice (sorry if i mispelled). its also not the
+            most user friendly anymore. Hopefully changes soon because I want to
+            love it! make it relaxing again please. <3
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>28/12/2025</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            can't find how to run the program. I paid for it and I haven't been
+            able to play it. also I just want to relax and stretch to soft
+            music. I do not want.voices to meditate. I don't think this is what
+            I thought it was!
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>27/12/2025</span>
+            <span>6.86</span>
+          </div>
+          <div>
+            Considering deleting and unsubscribing after using it for 5 years
+            because it's not been working properly for about a month. Everything
+            keeps loading for ages or doesn't play at all. No reply from support
+            so far. I tried all the troubleshooting steps but nothing's working.
+            PLEASE fix this bug!
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>27/12/2025</span>
+            <span>6.86</span>
+          </div>
+          <div>won't let me log in.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>26/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Im a new exp lorer, finding my favorite places. Thank you for
+            reaching out to me. 🤍
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>26/12/2025</span>
+            <span>5.15</span>
+          </div>
+          <div>
+            A horrible app. Keep me asking to sign up or login. These questions
+            are looping. Any choice does not work. What a joke.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>25/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            After signing up for Premium and getting a free guest pass offer for
+            a "loved one" on my account for 30 days I sent the link to my
+            husband who tried to access but had to create a new account of his
+            own to claim free pass which then required him to put in his credit
+            details which he didnt want to do. The whole process was not
+            calming. Calm need to do better if they genuinely want to attract
+            new customers. My husband was genuinely keen but now turned off by
+            the process and deception.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>23/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Meditations are too short I used LOVE this app for meditation.
+            Actually, I think I paid annually for over 5 years but I'm done with
+            it. The meditations have shifted towards very short lengths to the
+            point that I can't find any new ones more than 10 minutes long. When
+            I meditate, I'm trying to escape the fast pace of everyday life not
+            embrace it by meditating for 30 seconds...
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>23/12/2025</span>
+            <span>5.15</span>
+          </div>
+          <div>Does not work stops after 30 seconds for every podcast</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>22/12/2025</span>
+            <span>5.25</span>
+          </div>
+          <div>
+            used to be 5 stars. returned and subscribed straight away because I
+            loved this app but I can't even use it. won't be using this until
+            all of these issues are sorted. Just don't do it.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>22/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>unable to hear spoken words over the soundtrack</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>18/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            what happened with the volume? after the most recent update all the
+            voices are whisper quiet! i have to turn the background sounds to
+            almost zero to hear the narrators. i use this a lot for sleep and
+            can no longer drown out the noises due to this issue. sad, sleepy
+            me.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>18/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            this app just sucks I can find the same stuff online for free
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>17/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>full page ads Everytime I use the app</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>16/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            The app design is good. The selection is quite good too. I would
+            appreciate more traditional meditation practices and courses. Also,
+            it's very glitchy. The audio is extremely choppy many times,
+            completely ruining the experience.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>15/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Terribly organized. Tons of content but impossible to find anything
+            you actually want. They have some good content but the process of
+            actually finding what you want among all the irrelevant options is
+            so frustrating that it defeats the point of trying to use the app to
+            calm yourself. If I didn't get a free membership through an
+            organization I am affiliated with I would have deleted the app long
+            ago. This here is a call to the developers to fix the organizational
+            issues.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>15/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            This app is a cluttered mess compared to Headspace. The choices and
+            lack of organization are overwhelming. The app is also glitchy with
+            it often telling me I haven't completed any meditations yet when I
+            have, It's hard to pick up where you left off in a series because it
+            doesn't present the next session when you open the app, instead you
+            have to dig through an insane amount of content to find the series
+            you started. The Calm app actually stresses me out and I regret the
+            year-long membership.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>14/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>useless, poor performance</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>14/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>Not a free app as it says. Nothing is available for free.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>14/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>stinks lots of ads and login junk</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>14/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Can't view the daily refresh images anymore after the last 2 edits
+            😕 super sad about the daily refresh links not working... I click on
+            the notifications in the status bar but it disappears when I click
+            it and it just loads the home page for calm and no refresh message
+            😭😭😭😭😭
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>14/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            not user friendly from the start. I have a gift card code and can't
+            figure out where to type it. Your Facebook login option loops
+            forever.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">3★</span>
+            <span>14/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            I want thunderstorm sounds. would love a better search feature.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>13/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Purchased premium through Insta & it wasn't applied to my account
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>13/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            all parts should be purchased, and i can not find any free part at
+            least to get familiar to this app, it doean't even worth 1 star
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>13/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            it was good, I used it for many years, especially the "on the go", I
+            don't have much time to meditate . now I can't find this on the
+            menu, just a lot of huge meditations and none of what I wanted to
+            hear. As I said, it was good, now it's not intuitive anymore or
+            practical...
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>13/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            Unable to try hardly anything due to locked channels and continuous
+            irritating ads. Not recommended at all
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>12/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>not helping 😕</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>11/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            good app but with a lot of bugs and bad UX that make you angry and
+            not relaxed.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>11/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>Good like one minute message.And then it's just water...</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>11/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            Nothing will play right now, just three dancing dots on whatever I
+            select. it's frustrating me and keeping me awake!
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>10/12/2025</span>
+            <span>6.84</span>
+          </div>
+          <div>
+            they advertise recordings and meditations that don't seem to exist
+            on the app. Those calming songs and EMDR things they're pushing on
+            social media do not exist. false advertising.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>10/12/2025</span>
+            <span>5.9</span>
+          </div>
+          <div>READ YOUR REVIEWS Uninstalling. You know why</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>10/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>
+            The only narrator I enjoy listening to and use is Jeff Warren. He
+            uses a normal speaking voice. All the others use the annoying put on
+            soothing, cooing tone which is grating and winds me up even more.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>9/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>There are fees - NOT FREE.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>9/12/2025</span>
+            <span>6.85</span>
+          </div>
+          <div>incredible put me in a mindful State instantly🪷</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>8/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>Alright but has no sleep screen background noise</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">2★</span>
+            <span>7/12/2025</span>
+            <span>6.84</span>
+          </div>
+          <div>
+            what is on the ads is not found in app--most recent example is a
+            great audio emdr with soothing vocals. I have favorited and use all
+            the emdr music--my app is up to date--but what they advertise is
+            nowhere so found in the app.
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/12/2025</span>
+            <span>6.84</span>
+          </div>
+          <div>
+            no demo / preview mode - all is locked so have no idea what it is
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>5/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>
+            couldn't even use the app. but it did mess up my phone. Thanks for
+            that
+          </div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>4/12/2025</span>
+            <span>No Version</span>
+          </div>
+          <div>its not free as i heard it was.</div>
+        </div>
+
+        <div class="raw-item">
+          <div class="raw-meta">
+            <span class="score-badge">1★</span>
+            <span>3/12/2025</span>
+            <span>6.84</span>
+          </div>
+          <div>
+            Not what I thought it would be. Not personalized at all. Just a
+            library of recordings.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const ctx = document.getElementById("categoryChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: [
+            "Content & Locked Items",
+            "Technical Issues",
+            "Audio & Playback",
+            "UX & Updates",
+            "Login & Account",
+            "Ads & Promotion",
+            "Other/Uncategorized",
+          ],
+          datasets: [
+            {
+              label: "Count",
+              data: [2845, 492, 1275, 439, 423, 519, 5213],
+              backgroundColor: [
+                "#36A2EB",
+                "#FFCE56",
+                "#4BC0C0",
+                "#9966FF",
+                "#FF9F40",
+                "#C9CBCF",
+                "#E7E9ED",
+                "#FF6384",
+              ],
+              borderRadius: 8,
+              barThickness: "flex",
+              maxBarThickness: 50,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: "Issue Frequency by Category",
+              color: "#94a3b8",
+              font: { size: 16 },
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: "#334155" },
+              ticks: { color: "#e2e8f0" },
+            },
+            y: {
+              grid: { color: "#334155" },
+              ticks: { color: "#94a3b8" },
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
