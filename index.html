@@ -83,6 +83,12 @@
         Battery,
         Wifi,
         Signal,
+        Brain,
+        Wind,
+        Lock,
+        Check,
+        ChevronRight,
+        CheckCircle,
       } from "lucide-react";
 
       /* --- MOCK DATA --- */
@@ -702,118 +708,242 @@
 
       /* --- SCREENS --- */
 
-      const HomeScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-16 animate-fade-in">
-          {/* Scenic Header */}
-          <div className="flex flex-col items-center mb-8 relative">
-            <div className="absolute top-0 left-4 p-2 bg-white/10 rounded-full backdrop-blur-md">
-              <Mountain size={20} className="text-white" />
-            </div>
-            <div className="absolute top-0 right-4 p-2 bg-white/10 rounded-full backdrop-blur-md">
-              <Bell size={20} className="text-white" />
-              <div className="absolute top-2 right-2.5 w-2 h-2 bg-red-400 rounded-full border-2 border-[#0f4c81]" />
-            </div>
+      const HomeScreen = ({ onPlay }) => {
+        const planRef = useRef(null);
 
-            <h1 className="text-white text-6xl mb-12 drop-shadow-lg font-logo tracking-tight">
-              Calm
-            </h1>
+        const scrollToPlan = () => {
+          planRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        };
 
-            {/* Progress Ring */}
-            <div className="relative w-40 h-40 mb-10">
-              {/* Background Circle */}
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="12"
-                  fill="none"
+        return (
+          <div className="pb-32 pt-16 animate-fade-in">
+            {/* Greeting Section */}
+            <div className="px-6 pt-6 pb-6">
+              <div className="flex items-center justify-center mb-1">
+                <h1 className="text-blue-100/90 text-lg font-medium tracking-wide">
+                  Good Evening, Amy
+                </h1>
+                <Moon
+                  size={18}
+                  className="text-[#fce570] ml-2 fill-[#fce570]"
                 />
-                {/* Progress Arc */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  stroke="white"
-                  strokeWidth="12"
-                  fill="none"
-                  strokeDasharray="440"
-                  strokeDashoffset="340"
-                  strokeLinecap="round"
-                  className="drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-white text-5xl font-light">1</span>
-                <span className="text-blue-200 text-sm font-medium mt-1">
-                  Day
-                </span>
               </div>
+              <p className="text-white text-2xl text-center font-medium leading-relaxed opacity-90">
+                What do you need right now?
+              </p>
             </div>
 
-            {/* Week Streak */}
-            <div className="flex justify-center space-x-3 mb-4">
-              {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => (
-                <div key={idx} className="flex flex-col items-center space-y-2">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300
-              ${idx === 3 ? "bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.3)]" : "bg-white/5 border-transparent text-blue-300/50"}`}
-                  >
-                    {idx === 3 ? <span className="text-sm">✓</span> : null}
-                  </div>
-                  <span className="text-[10px] font-medium text-blue-200/60">
-                    {day}
+            {/* Quick Actions */}
+            <div className="flex gap-3 px-4 mb-10 overflow-x-visible">
+              {[
+                {
+                  name: "Sleep",
+                  icon: Moon,
+                  color: "bg-[#1a3b5c]/40 hover:bg-[#1a3b5c]/60",
+                  iconColor: "text-blue-100",
+                },
+                {
+                  name: "Relax",
+                  icon: Wind,
+                  color: "bg-[#1a3b5c]/40 hover:bg-[#1a3b5c]/60",
+                  iconColor: "text-blue-100",
+                },
+                {
+                  name: "Focus",
+                  icon: Brain,
+                  color: "bg-[#1a3b5c]/40 hover:bg-[#1a3b5c]/60",
+                  iconColor: "text-blue-100",
+                },
+              ].map((action) => (
+                <button
+                  onClick={scrollToPlan}
+                  key={action.name}
+                  className={`flex-1 flex flex-col items-center justify-center py-5 rounded-2xl ${action.color} backdrop-blur-md border border-white/5 shadow-lg active:scale-95 transition-all`}
+                >
+                  <action.icon
+                    size={28}
+                    className={`${action.iconColor} mb-2 opacity-90`}
+                  />
+                  <span className="text-blue-100 text-sm font-medium tracking-wide">
+                    {action.name}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
 
-            <p className="text-blue-100 text-center text-sm px-10 leading-relaxed mt-4 opacity-90">
-              You're off to a great start using Calm 1 day this week. Keep it
-              up!
-            </p>
-          </div>
+            {/* Tonight's Plan - Featured Card */}
+            <div ref={planRef} className="px-4 mb-10 scroll-mt-24">
+              <h3 className="text-blue-100/80 text-lg font-medium mb-3">
+                Tonight's Plan
+              </h3>
+              <div className="bg-[#1a3b5c]/30 backdrop-blur-xl rounded-3xl p-1 border border-white/5 shadow-xl">
+                <div className="relative overflow-hidden rounded-[20px] bg-[#1a3b5c]/40 p-5 flex flex-col items-center text-center">
+                  {/* Background Accents (subtle glow) */}
+                  <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(60,100,160,0.15)_0%,transparent_60%)] pointer-events-none" />
 
-          {/* Content Sections */}
-          <SectionHeader title="Popular on Calm" />
-          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.popular.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
+                  <div className="flex w-full items-start gap-4 mb-6 z-10">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
+                      <Play
+                        size={20}
+                        fill="rgba(255,255,255,0.9)"
+                        className="text-white/90 ml-1"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-white text-lg font-medium leading-tight mb-1">
+                        10 min Guided Sleep Wind-Down
+                      </h4>
+                      <p className="text-blue-200/70 text-sm">
+                        Helps slow racing thoughts
+                      </p>
+                    </div>
+                  </div>
 
-          <SectionHeader title="Today's Dailies" />
-          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.dailies.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
+                  <button
+                    onClick={() => onPlay(MOCK_DATA.popular[0])}
+                    className="w-full py-3.5 rounded-full bg-[#dae4f0] text-[#0f4c81] font-semibold text-sm shadow-lg hover:bg-white active:scale-[0.98] transition-all z-10"
+                  >
+                    Start Session
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <SectionHeader title="New & Noteworthy" />
-          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.newReleases.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
+            {/* Sleep Reset Progress */}
+            <div className="px-4 mb-10">
+              <h3 className="text-blue-100/80 text-lg font-medium mb-1">
+                Day 2{" "}
+                <span className="text-blue-200/60 text-base font-normal">
+                  of Your Sleep Reset
+                </span>
+              </h3>
 
-          <SectionHeader title="Meditations for Anxiety" />
-          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.anxiety.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
+              <div className="flex items-center text-sm text-blue-200/60 mb-4 gap-4">
+                <div className="flex items-center gap-1.5 ">
+                  <div className="w-4 h-4 rounded-full bg-blue-500/80 flex items-center justify-center border border-white/20 shadow-sm">
+                    <Check size={10} className="text-white" />
+                  </div>
+                  <span className="line-through opacity-60">Tonight</span>
+                </div>
+                <div className="flex items-center gap-1.5 opacity-100 text-blue-100">
+                  <div className="w-4 h-4 rounded-full border border-blue-200/30 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-blue-200" />
+                  </div>
+                  <span>Day 2 of 7</span>
+                </div>
+              </div>
 
-          <SectionHeader title="Relaxing Music" />
-          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.relaxMusic.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
+              {/* Progress Dots */}
+              <div className="flex items-center justify-between px-2 relative">
+                {/* Connecting Line */}
+                <div className="absolute left-4 right-4 top-1/2 h-[2px] bg-white/5 -z-10" />
 
-          <div className="h-8" />
-        </div>
-      );
+                {Array.from({ length: 7 }).map((_, i) => {
+                  const day = i + 1;
+                  const status =
+                    day < 2 ? "completed" : day === 2 ? "current" : "upcoming"; // Mock day 2
+
+                  return (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          status === "completed"
+                            ? "bg-blue-400 scale-110 shadow-[0_0_8px_rgba(96,165,250,0.4)]"
+                            : status === "current"
+                              ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] scale-125"
+                              : "bg-white/10"
+                        }`}
+                      />
+                      <span className="text-[9px] text-blue-200/40 font-medium tracking-wide">
+                        Day {day}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Premium Preview */}
+            <div className="px-4 mb-0">
+              <h3 className="text-blue-100/80 text-lg font-medium mb-3">
+                Today's Premium Preview
+              </h3>
+              <div
+                className="relative overflow-hidden rounded-2xl h-24 bg-[#1a3b5c]/40 border border-white/5 shadow-lg group cursor-pointer backdrop-blur-md"
+                onClick={() => onPlay(MOCK_DATA.popular[0])}
+              >
+                {/* Background Image with Gradient Overlay */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center opacity-60"
+                  style={{
+                    backgroundImage: `url('https://picsum.photos/seed/lake/800/600')`,
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#111425] via-[#111425]/80 to-transparent" />
+
+                <div className="absolute inset-0 flex items-center justify-between px-5">
+                  <div className="flex flex-col justify-center">
+                    <div className="flex items-center gap-2 text-blue-200/60 text-xs uppercase tracking-wider font-medium mb-1">
+                      Sleep Story <Lock size={10} className="mb-[1px]" />
+                    </div>
+                    <h4 className="text-white text-lg font-medium">
+                      Blue Lake
+                    </h4>
+                    <p className="text-blue-200/50 text-xs mt-1">
+                      Unlock one premium experience free today
+                    </p>
+                  </div>
+                  <ChevronRight
+                    size={20}
+                    className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Content Sections */}
+            <SectionHeader title="Popular on Calm" />
+            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+              {MOCK_DATA.popular.map((item) => (
+                <ContentCard key={item.id} item={item} onClick={onPlay} />
+              ))}
+            </div>
+
+            <SectionHeader title="Today's Dailies" />
+            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+              {MOCK_DATA.dailies.map((item) => (
+                <ContentCard key={item.id} item={item} onClick={onPlay} />
+              ))}
+            </div>
+
+            <SectionHeader title="New & Noteworthy" />
+            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+              {MOCK_DATA.newReleases.map((item) => (
+                <ContentCard key={item.id} item={item} onClick={onPlay} />
+              ))}
+            </div>
+
+            <SectionHeader title="Meditations for Anxiety" />
+            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+              {MOCK_DATA.anxiety.map((item) => (
+                <ContentCard key={item.id} item={item} onClick={onPlay} />
+              ))}
+            </div>
+
+            <SectionHeader title="Relaxing Music" />
+            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+              {MOCK_DATA.relaxMusic.map((item) => (
+                <ContentCard key={item.id} item={item} onClick={onPlay} />
+              ))}
+            </div>
+
+            <div className="h-8" />
+          </div>
+        );
+      };
 
       const SleepScreen = ({ onPlay }) => (
         <div className="pb-32 pt-14 animate-fade-in">
@@ -1147,7 +1277,6 @@
         const [showGreeting, setShowGreeting] = useState(true);
 
         useEffect(() => {
-          setCurrentTrack(MOCK_DATA.sleepStories[0]);
           // Disable auto-check-in if greeting is shown, or maybe show it later?
           // For now, let's strictly control the flow.
           // const timer = setTimeout(() => setShowCheckIn(true), 1500);
