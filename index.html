@@ -23,6 +23,37 @@
         height: 100vh;
         width: 100vw;
       }
+
+      /* Custom Animations for Soft Transitions */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+      }
+
+      .animate-fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .animate-fade-out {
+        animation: fadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
     </style>
   </head>
   <body>
@@ -672,7 +703,7 @@
       /* --- SCREENS --- */
 
       const HomeScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-32 pt-16 animate-fade-in">
           {/* Scenic Header */}
           <div className="flex flex-col items-center mb-8 relative">
             <div className="absolute top-0 left-4 p-2 bg-white/10 rounded-full backdrop-blur-md">
@@ -785,7 +816,7 @@
       );
 
       const SleepScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-32 pt-14 animate-fade-in">
           <div className="flex flex-col items-center mb-6">
             <h2 className="text-white text-xl font-medium mb-6">Sleep</h2>
 
@@ -876,7 +907,7 @@
       );
 
       const DiscoverScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-32 pt-14 px-4 animate-fade-in">
           <div className="text-center mb-6">
             <h2 className="text-white text-xl font-medium mb-6">Discover</h2>
 
@@ -922,7 +953,7 @@
       );
 
       const ProfileScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-32 pt-14 animate-fade-in">
           <div className="flex justify-between items-center px-6 mb-6">
             <Settings className="text-white" size={24} />
             <h2 className="text-white text-xl font-medium">Profile</h2>
@@ -1018,6 +1049,92 @@
         </div>
       );
 
+      /* --- GREETING SCREEN --- */
+
+      const GreetingScreen = ({ onClose }) => {
+        const [greeting, setGreeting] = useState("Good morning");
+        const [isClosing, setIsClosing] = useState(false);
+
+        useEffect(() => {
+          const hour = new Date().getHours();
+          if (hour < 12) setGreeting("Good morning");
+          else if (hour < 18) setGreeting("Good afternoon");
+          else setGreeting("Good evening");
+        }, []);
+
+        const handleClose = () => {
+          setIsClosing(true);
+          setTimeout(onClose, 400); // Wait for animation to finish
+        };
+
+        const moods = [
+          { label: "Happy", emoji: "😊" },
+          { label: "Excited", emoji: "🤩" },
+          { label: "Grateful", emoji: "😍" },
+          { label: "Relaxed", emoji: "😌" },
+          { label: "Content", emoji: "🙂" },
+          { label: "Tired", emoji: "😴" },
+          { label: "Unsure", emoji: "😐" },
+          { label: "Bored", emoji: "😶" },
+          { label: "Anxious", emoji: "😰" },
+          { label: "Angry", emoji: "😤" },
+          { label: "Stressed", emoji: "😫" },
+          { label: "Sad", emoji: "😔" },
+        ];
+
+        return (
+          <div
+            className={`absolute inset-0 z-[60] flex flex-col items-center justify-center p-6 bg-[#1a3b5c]/30 backdrop-blur-md ${isClosing ? "animate-fade-out" : "animate-fade-in"}`}
+          >
+            {/* Background Image with Overlay */}
+            <div
+              className="absolute inset-0 z-0 bg-cover bg-center opacity-50"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?auto=format&fit=crop&q=80&w=1000')`,
+              }}
+            />
+            {/* Glassy Overlay Gradient */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#1a3b5c]/80 via-[#0f4c81]/80 to-[#1e1e1e]/90" />
+
+            {/* Close Button */}
+            <button
+              onClick={handleClose}
+              className="absolute top-12 left-6 text-white/70 hover:text-white transition-colors z-10 p-2 bg-white/10 rounded-full backdrop-blur-sm"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Header */}
+            <div className="text-center mb-10 mt-10 relative z-10">
+              <h2 className="text-blue-100 text-lg font-medium mb-2 tracking-wide">
+                {greeting}, Amy
+              </h2>
+              <h1 className="text-white text-4xl font-serif font-medium tracking-tight drop-shadow-sm">
+                How are you feeling?
+              </h1>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-3 gap-3 w-full max-w-xs relative z-10">
+              {moods.map((mood) => (
+                <button
+                  key={mood.label}
+                  onClick={handleClose}
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/20 hover:scale-105 transition-all duration-300 group aspect-square backdrop-blur-md shadow-lg"
+                >
+                  <span className="text-4xl mb-2 group-hover:scale-110 transition-transform block filter drop-shadow-md font-emoji">
+                    {mood.emoji}
+                  </span>
+                  <span className="text-blue-100 text-[10px] font-medium tracking-wider uppercase group-hover:text-white">
+                    {mood.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
       /* --- MAIN APP WRAPPER --- */
 
       // Internal app logic component
@@ -1027,11 +1144,14 @@
         const [isPlaying, setIsPlaying] = useState(false);
         const [isPlayerOpen, setIsPlayerOpen] = useState(false);
         const [showCheckIn, setShowCheckIn] = useState(false);
+        const [showGreeting, setShowGreeting] = useState(true);
 
         useEffect(() => {
           setCurrentTrack(MOCK_DATA.sleepStories[0]);
-          const timer = setTimeout(() => setShowCheckIn(true), 1500);
-          return () => clearTimeout(timer);
+          // Disable auto-check-in if greeting is shown, or maybe show it later?
+          // For now, let's strictly control the flow.
+          // const timer = setTimeout(() => setShowCheckIn(true), 1500);
+          // return () => clearTimeout(timer);
         }, []);
 
         const handlePlay = (track) => {
@@ -1094,6 +1214,10 @@
             {showCheckIn && (
               <CheckInModal onClose={() => setShowCheckIn(false)} />
             )}
+
+            {showGreeting && (
+              <GreetingScreen onClose={() => setShowGreeting(false)} />
+            )}
           </div>
         );
       };
@@ -1142,9 +1266,10 @@
               </div>
             </div>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sacramento&family=Satisfy&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sacramento&family=Satisfy&family=Inter:wght@300;400;500;600&family=Noto+Color+Emoji&display=swap');
         .font-logo { font-family: 'Sacramento', cursive; }
         .font-script { font-family: 'Satisfy', cursive; }
+        .font-emoji { font-family: 'Noto Color Emoji', sans-serif; }
         body { font-family: 'Inter', sans-serif; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
