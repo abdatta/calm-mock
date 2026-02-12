@@ -842,12 +842,6 @@
             onClick={() => setActiveTab("home")}
           />
           <NavIcon
-            Icon={Moon}
-            label="Sleep"
-            isActive={activeTab === "sleep"}
-            onClick={() => setActiveTab("sleep")}
-          />
-          <NavIcon
             Icon={Compass}
             label="Discover"
             isActive={activeTab === "discover"}
@@ -1143,59 +1137,36 @@
               </div>
             </div>
 
-            {/* Content Sections */}
-            <SectionHeader title="Popular on Calm" />
-            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-              {MOCK_DATA.popular.map((item) => (
-                <ContentCard key={item.id} item={item} onClick={onPlay} />
-              ))}
-            </div>
-
-            <SectionHeader title="Today's Dailies" />
-            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-              {MOCK_DATA.dailies.map((item) => (
-                <ContentCard key={item.id} item={item} onClick={onPlay} />
-              ))}
-            </div>
-
-            <SectionHeader title="New & Noteworthy" />
-            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-              {MOCK_DATA.newReleases.map((item) => (
-                <ContentCard key={item.id} item={item} onClick={onPlay} />
-              ))}
-            </div>
-
-            <SectionHeader title="Meditations for Anxiety" />
-            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-              {MOCK_DATA.anxiety.map((item) => (
-                <ContentCard key={item.id} item={item} onClick={onPlay} />
-              ))}
-            </div>
-
-            <SectionHeader title="Relaxing Music" />
-            <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
-              {MOCK_DATA.relaxMusic.map((item) => (
-                <ContentCard key={item.id} item={item} onClick={onPlay} />
-              ))}
-            </div>
-
             <div className="h-8" />
           </div>
         );
       };
 
-      const SleepScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 animate-fade-in">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-white text-xl font-medium mb-6">Sleep</h2>
+      const DiscoverScreen = ({ onPlay }) => (
+        <div className="pb-32 pt-6 animate-fade-in">
+          <div className="flex flex-col items-center mb-6 px-4">
+            <h2 className="text-white text-xl font-medium mb-6">Discover</h2>
 
-            {/* Pills Filter */}
-            <div className="flex overflow-x-auto w-full px-4 space-x-2 scrollbar-hide pb-2">
+            {/* Search Bar */}
+            <div className="relative w-full mb-6">
+              <Search
+                className="absolute left-4 top-3.5 text-blue-200"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Title, narrator, artist, or topic"
+                className="w-full bg-[#1a3b5c]/60 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-blue-300/50 focus:outline-none focus:bg-[#1a3b5c] focus:border-white/30 transition-all shadow-inner"
+              />
+            </div>
+
+            {/* Pills Filter - Adapted from Sleep Tab */}
+            <div className="flex overflow-x-auto w-full space-x-2 scrollbar-hide pb-2 -mx-4 px-4">
               <button className="bg-white text-[#0f4c81] px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap shadow-lg">
-                Sleep Stories
+                All
               </button>
               <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
-                All
+                Stories
               </button>
               <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
                 Meditations
@@ -1203,10 +1174,13 @@
               <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
                 Music
               </button>
+              <button className="bg-[#1a3b5c]/60 text-blue-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap border border-white/5">
+                Soundscapes
+              </button>
             </div>
           </div>
 
-          {/* Featured Banner Style */}
+          {/* Featured Banner Style - From Sleep Tab */}
           <div
             className="mx-4 mb-8 bg-gradient-to-r from-indigo-900 to-purple-900 rounded-2xl p-4 flex items-center justify-between shadow-lg border border-white/10 relative overflow-hidden group cursor-pointer"
             onClick={() => onPlay(MOCK_DATA.sleepStories[2])}
@@ -1228,7 +1202,49 @@
             </div>
           </div>
 
-          <SectionHeader title="Sleep Stories for Kids" />
+          <SectionHeader title="Popular on Calm" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.popular.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="Today's Dailies" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.dailies.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="New & Noteworthy" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.newReleases.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="Meditations for Anxiety" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.anxiety.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="Relaxing Music" />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.relaxMusic.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="New & Noteworthy" showSeeAll={true} />
+          <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
+            {MOCK_DATA.dailies.map((item) => (
+              <ContentCard key={item.id} item={item} onClick={onPlay} />
+            ))}
+          </div>
+
+          <SectionHeader title="Stories for Kids" />
           <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
             {MOCK_DATA.sleepStories.map((item) => (
               <ContentCard
@@ -1252,7 +1268,7 @@
             ))}
           </div>
 
-          <SectionHeader title="Sleep Meditations" />
+          <SectionHeader title="Meditations" />
           <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
             {MOCK_DATA.anxiety.map((item) => (
               <ContentCard key={item.id} item={item} onClick={onPlay} />
@@ -1266,7 +1282,7 @@
             ))}
           </div>
 
-          <SectionHeader title="Drift Off with Music" />
+          <SectionHeader title="Music for Sleep" />
           <div className="flex overflow-x-auto px-4 pb-4 scrollbar-hide snap-x">
             {MOCK_DATA.sleepMusic.map((item) => (
               <ContentCard key={item.id} item={item} onClick={onPlay} />
@@ -1275,54 +1291,8 @@
         </div>
       );
 
-      const DiscoverScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 px-4 animate-fade-in">
-          <div className="text-center mb-6">
-            <h2 className="text-white text-xl font-medium mb-6">Discover</h2>
-
-            {/* Search Bar */}
-            <div className="relative">
-              <Search
-                className="absolute left-4 top-3.5 text-blue-200"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder="Title, narrator, artist, or topic"
-                className="w-full bg-[#1a3b5c]/60 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-blue-300/50 focus:outline-none focus:bg-[#1a3b5c] focus:border-white/30 transition-all shadow-inner"
-              />
-            </div>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-8">
-            {MOCK_DATA.categories.map((cat, idx) => (
-              <button
-                key={idx}
-                className="bg-[#1a3b5c]/40 hover:bg-[#1a3b5c]/80 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center space-y-3 transition-colors group h-28"
-              >
-                <cat.icon
-                  className="text-white group-hover:scale-110 transition-transform"
-                  size={28}
-                />
-                <span className="text-blue-100 font-medium text-sm">
-                  {cat.name}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <SectionHeader title="New & Noteworthy" showSeeAll={true} />
-          <div className="flex overflow-x-auto -mx-4 px-4 pb-4 scrollbar-hide snap-x">
-            {MOCK_DATA.dailies.map((item) => (
-              <ContentCard key={item.id} item={item} onClick={onPlay} />
-            ))}
-          </div>
-        </div>
-      );
-
       const ProfileScreen = ({ onPlay }) => (
-        <div className="pb-32 pt-14 animate-fade-in">
+        <div className="pb-32 pt-6 animate-fade-in">
           <div className="flex justify-between items-center px-6 mb-6">
             <Settings className="text-white" size={24} />
             <h2 className="text-white text-xl font-medium">Profile</h2>
@@ -1610,7 +1580,7 @@
             <div className="absolute inset-0 overflow-y-auto scrollbar-hide z-10 pt-8 pb-4">
               <div className="relative min-h-full">
                 {activeTab === "home" && <HomeScreen onPlay={handlePlay} />}
-                {activeTab === "sleep" && <SleepScreen onPlay={handlePlay} />}
+
                 {activeTab === "discover" && (
                   <DiscoverScreen onPlay={handlePlay} />
                 )}
