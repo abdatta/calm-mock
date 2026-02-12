@@ -340,6 +340,16 @@
             duration: "20 min",
           },
         ],
+        premium: [
+          {
+            id: 25,
+            title: "Azure Waters",
+            subtitle: "Premium Experience",
+            image: "https://picsum.photos/seed/premium-lake/800/600",
+            category: "Premium",
+            duration: "15 min",
+          },
+        ],
       };
 
       /* --- COMPONENTS --- */
@@ -1101,7 +1111,7 @@
               </h3>
               <div
                 className="relative overflow-hidden rounded-3xl h-28 bg-[#1a3b5c]/40 border border-white/10 shadow-2xl group cursor-pointer backdrop-blur-md"
-                onClick={() => onPlay(MOCK_DATA.popular[0])}
+                onClick={() => onPlay(MOCK_DATA.premium[0])}
               >
                 {/* Premium Shine Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-30 pointer-events-none group-hover:translate-x-full transition-transform duration-1000" />
