@@ -550,9 +550,10 @@
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Background with Blur */}
+            {/* Background with Blur - Blue Filtered */}
+            {/* Background with Blur - Blue Filtered */}
             <div
-              className="absolute inset-0 bg-cover bg-center opacity-40"
+              className="absolute inset-0 bg-cover bg-center blur-sm scale-110 saturate-150 brightness-75"
               style={{
                 backgroundImage: `url(${bgError ? FALLBACK_IMAGE : track.image})`,
               }}
@@ -564,7 +565,8 @@
               alt="preload"
             />
 
-            <div className="absolute inset-0 bg-[#0f4c81]/80 backdrop-blur-2xl" />
+            <div className="absolute inset-0 bg-[#0f4c81]/50 mix-blend-color" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0f4c81]/30 via-transparent to-[#0f4c81]/90" />
 
             {/* Header */}
             <div className="relative z-10 flex justify-between items-center p-6 mt-8">
